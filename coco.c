@@ -1,7 +1,7 @@
 // Assignment 1 19T1 COMP1511 Coco
 //
 // This program was written by YOUR-NAME-HERE (z5258152)
-// on INSERT-DATE-HERE
+// on 29/03/19
 //
 
 #include <stdio.h>
@@ -20,13 +20,20 @@
 #define CARD_MIN             10
 #define CARD_MAX             49
 
+#define DOUGLAS              42
+
 
 // IF YOU NEED MORE #defines ADD THEM HERE
+
 
 void print_player_name(void);
 void choose_discards(void);
 void choose_card_to_play(void);
 
+int store_values(int array_length, int array[], int my_hand);
+int prime_finder(int array_length, int general_array[], int prime_array[]);
+void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length);
+void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[]);
 
 // ADD PROTOTYPES FOR YOUR FUNCTIONS HERE
 
@@ -50,7 +57,7 @@ int main(void) {
 
 void print_player_name(void) {
 
-    // Prints the Players name
+    // CHANGE THIS PRINTF TO YOUR DESIRED PLAYER NAME
 
     printf("Master Shredder");
 
@@ -58,190 +65,200 @@ void print_player_name(void) {
 
 void choose_discards() {
     
-    // Counter used to initialise values into array of cards in hand
-    int i = 0;
+    int i = N_CARDS_INITIAL_HAND - 1;
+    
     //Array storing card values in Players hand
     int cards_in_hand[N_CARDS_INITIAL_HAND];
     
-    // Loop used to store intial card values into array
-    while (i < N_CARDS_INITIAL_HAND){
+    int cards_discard_index[3];
+    int d = 0;
+    
+    store_values(N_CARDS_INITIAL_HAND, cards_in_hand, 0);
+    
+    
+    while ( i > 0 && d  < 3){
         
-        // Storing Value into array
-        scanf("%d", &cards_in_hand[i]);
+        if (cards_in_hand[i] == DOUGLAS){
+            
+            i = i - 1;
+        }
+        else{
         
-        //Increments counter by 1
-        i++;
+            printf("%d ", cards_in_hand[i]);
+            i = i - 1;
+            d++;
+        }
     }
-    
-    /* Loop used to test that values are correctly stored in Array
-    
-    i = 0;
-    while (i < N_CARDS_INITIAL_HAND){
-        
-        // Printing Values out
-        printf("%d ", cards_in_hand[i]);
-        
-        //increment counter by 1
-        i++;
-    }
-    
-    */
-    
     // Prints cards we are going to discard
-    printf("%d %d %d\n", cards_in_hand[9], cards_in_hand[8], cards_in_hand[7]);
-    
-
+    printf("\n");
 }
 
 
 void choose_card_to_play(void) {
-    
-    // Variable to store number of cards currently in hand (1-10)
+
     int number_cards_in_hand = 0;
-    
-    // scanf used to receive how many cards in hand from referee
     scanf("%d", &number_cards_in_hand);
-    
-    // How many cards have been played in the round so far (0-3)
+
     int number_cards_played = 0;
-    
-    // scanf used to receive number of cards played from referee
     scanf("%d", &number_cards_played);
     
-    // Array to store values of cards played this round (Added 1 for case where we are in first position)
-    int cards_played[number_cards_played + 1];
-    
-    // Counter used in loop to store card values played this round
-    int counter = 0;
-    
-    // Table Position (0-3)
     int table_position = 0;
-    
-    // scanf used to receive table position from referee
     scanf("%d", &table_position);
-   
-    // Counter used to initialise values into array of cards in hand
-    int i = 0;
     
-    //Array storing card values in Players hand
-    int cards_in_hand[number_cards_in_hand];
+    int hand[number_cards_in_hand];
+    int douglas_index = -1;
+    douglas_index = store_values(number_cards_in_hand, hand, 1);
+
+    int primes_hand[number_cards_in_hand];
+    int primes_hand_length = 0;
+    primes_hand_length = prime_finder(number_cards_in_hand, hand, primes_hand); 
     
-    
-    // Loop used to store intial card values into cards_in_hand[] array
-    while (i < number_cards_in_hand){
+    if (number_cards_played > 0){
         
-        // Storing Value into array
-        scanf("%d", &cards_in_hand[i]);
+        int cards_played[number_cards_played];
+        store_values(number_cards_played, cards_played, 0);
         
-        //Increments counter by 1
-        i++;
-    }
-    
-    // Counter used within array as condition to exit once all values are stored
-    i = 0;
-    
-    // Loop used to store cards played in the round so far
-    while ( i < number_cards_played){
-    
-        //Used to store the values into the array
-        scanf("%d", &cards_played[i]);
+        int prime_played[1];
+        int prime_played_length = 0;
+        prime_played_length = prime_finder(1, cards_played, prime_played);
         
-        i++;
-    }
-    // Loop used to check if values are stored in array correctly
-    
-    /*
-    i = 0;
-    while (i < number_cards_in_hand){
-        
-        // Printing Values out
-        printf("%d ", cards_in_hand[i]);
-        
-        //increment counter by 1
-        i++;
-    }
-    */
-    
-    i = 0;
-    
-    // Variable used as a boolean to indicate whether the first card value played was a prime number
-    int prime_number = 0;
-    
-    // Used to increment the index for where the values are stored in the array for legal_cocomposite_hand[]
-    int d = 0;
-    
-    // Initialise array to store cards in hand which are playable 
-    int legal_cocomposite_number[10];
-    
-    if (number_cards_played > 0) {
-        while (i < number_cards_in_hand){
+        if (prime_played_length == 1 && primes_hand_length > 0){
             
-            // Variable used to store the lowest number when comparing first card value played and card in hand to be tested
-            int lowest_number = 0;
+            largest_play_no_win(prime_played, primes_hand, primes_hand_length);
+        }
+        else if (prime_played_length == 1 && primes_hand_length <= 0){
         
-            //Counter used to go through all possible factors
-            counter = 2;
-            
-            // IF statement to test for lowest card value to limit the factors which it loops through until
-            if (cards_in_hand[i] < cards_played[0]){
-            
-                // Assigns the lowest card value to the current card value that we are trying to test for cocomposicy
-                lowest_number = cards_in_hand[i];
-            
-            }
-            else{
-                
-                // Assigns the lowest card value to the first card played
-                lowest_number = cards_played[0];
-            
-            }
+            printf("%d", hand[number_cards_in_hand - 1]);
+        }
+        else if (prime_played_length == 0){
         
-            //Loop used to go through all possible factors between 2 and the first number played
-            while (counter < lowest_number){
-            
-                //Testing condition for whether the number is cocomposite with the original number played
-                if (cards_played[0] % counter == 0 && cards_in_hand[i] % counter == 0){
-            
-                    //Assigning the cocomposite number into the array cards_in_hand[]
-                    legal_cocomposite_number[d] = cards_in_hand[i];
-                    d++;
-                
-                    //Used to exit loop once we find that the number is cocomposite and continue to test other numbers
-                    counter = cards_played[0];
-                }
-                
-                // Incrementing counter to continue trying to find factors
-                counter++;
-        
-            }   
-        
-            i++;
-    
+            coco_numbers(number_cards_in_hand, hand, cards_played);
         }
         
-        if (d > 0){
-    
-            printf("%d\n", legal_cocomposite_number[0]);
-        }
-        else {
-            printf("%d\n", cards_in_hand[number_cards_in_hand - 1]);
- 
-        }    
     }
     else if (number_cards_played == 0){
-        printf("%d\n", cards_in_hand[number_cards_in_hand - 1]);
+        
+        printf("%d", hand[0]);
     }
-    // ADD CODE TO READ THE CARDS PREVIOUSLY PLAYED THIS ROUND INTO AN ARRAY
-    // YOU WILL NEED TO USE A WHILE LOOP AND SCANF
 
+    
     // ADD CODE TO READ THE CARDS PLAYED IN THE HISTORY OF THE GAME INTO AN ARRAY
     // YOU WILL NEED TO USE A WHILE LOOP AND SCANF
 
     // THEN REPLACE THIS PRINTF WITH CODE TO CHOOSE AND PRINT THE CARD YOU WISH TO PLAY
 
- 
 
 }
 
 // ADD YOUR FUNCTIONS HERE
+
+// Function to store values in hand into an array
+int store_values(int array_length, int array[], int my_hand){
+
+    int i = 0;
+    int douglas_index = -1;
+    
+    while (i< array_length){
+        
+        scanf("%d", &array[i]);
+        
+        if (my_hand == 1 && array[i] == 42){
+            
+            douglas_index = i;
+        }
+        i++;
+    } 
+    return douglas_index; 
+}
+
+// Function used to find primes and store them into an array
+int prime_finder(int array_length, int general_array[], int prime_array[]){
+    
+    int i = 0;
+    int d = 0;
+    
+    while (i < array_length){
+        
+        int prime = 1;
+        int counter = 2;
+        
+        while (counter < general_array[i]){
+        
+            if (general_array[i] % counter == 0){
+                
+                prime = 0;
+                
+                // Exit loop if values is not array
+                counter = general_array[i];
+            }
+            counter++;
+        }   
+        
+        if (prime == 1){
+        
+            prime_array[d] = general_array[i];
+            d++;
+        }
+        i++;
+    }
+    
+    return d;
+}
+
+void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length){
+    
+    int i = legal_cards_length - 1;
+    int card_printed = 0;
+    
+    while (i >= 0){
+        
+        if (legal_cards[i] < cards_played[0]){
+        
+            printf("%d\n", legal_cards[i]);
+            card_printed = 1;
+            
+            // Exit loop condition
+            i = -1;
+        }
+        i = i - 1; 
+    }
+    
+    if (card_printed == 0){
+    
+        printf("%d\n", legal_cards[0]);
+    }
+}
+
+void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[]){
+
+    int i = 0;
+    int d = 0;
+    int coco_cards[number_cards_in_hand];
+    
+    while (i < number_cards_in_hand){
+    
+        int counter = 2;
+    
+        while (counter < hand[i]){
+        
+            if ( hand[i] % counter == 0 && cards_played[0] % counter == 0){
+            
+                coco_cards[d] = hand[i];
+                d++;   
+                counter = hand[i]; 
+            }
+            counter++;
+        }
+            
+        i++;
+    }
+    
+    if ( d > 0){
+    
+        largest_play_no_win(cards_played, coco_cards, d);
+    }
+    else {
+        printf("%d\n", hand[number_cards_in_hand - 1]);
+    }
+}
 
