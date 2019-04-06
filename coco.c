@@ -30,10 +30,11 @@ void print_player_name(void);
 void choose_discards(void);
 void choose_card_to_play(void);
 
-int store_values(int array_length, int array[], int my_hand);
+void store_values(int array_length, int array[]);
 int prime_finder(int array_length, int general_array[], int prime_array[]);
-void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length);
-void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[]);
+void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length, int number_cards_played);
+void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[], int number_cards_played);
+void divisible_numbers(int legal_cards[], int hand[], int number_cards_in_hand);
 
 // ADD PROTOTYPES FOR YOUR FUNCTIONS HERE
 
@@ -73,7 +74,7 @@ void choose_discards() {
     int cards_discard_index[3];
     int d = 0;
     
-    store_values(N_CARDS_INITIAL_HAND, cards_in_hand, 0);
+    store_values(N_CARDS_INITIAL_HAND, cards_in_hand);
     
     
     while ( i > 0 && d  < 3){
@@ -106,42 +107,52 @@ void choose_card_to_play(void) {
     scanf("%d", &table_position);
     
     int hand[number_cards_in_hand];
-    int douglas_index = -1;
-    douglas_index = store_values(number_cards_in_hand, hand, 1);
+    store_values(number_cards_in_hand, hand);
 
     int primes_hand[number_cards_in_hand];
     int primes_hand_length = 0;
     primes_hand_length = prime_finder(number_cards_in_hand, hand, primes_hand); 
     
+    int prime_played_game = 0;
+    
     if (number_cards_played > 0){
         
         int cards_played[number_cards_played];
-        store_values(number_cards_played, cards_played, 0);
+        store_values(number_cards_played, cards_played);
         
         int prime_played[1];
         int prime_played_length = 0;
         prime_played_length = prime_finder(1, cards_played, prime_played);
         
+        if (prime_played_game == 0 && prime_played_length == 1){
+            prime_played_game = 1;
+        }
+        
         if (prime_played_length == 1 && primes_hand_length > 0){
             
-            largest_play_no_win(prime_played, primes_hand, primes_hand_length);
+            largest_play_no_win(cards_played, primes_hand, primes_hand_length, number_cards_played);
         }
         else if (prime_played_length == 1 && primes_hand_length <= 0){
         
-            printf("%d", hand[number_cards_in_hand - 1]);
+            printf("%d\n", hand[number_cards_in_hand - 1]);
         }
         else if (prime_played_length == 0){
         
-            coco_numbers(number_cards_in_hand, hand, cards_played);
+            coco_numbers(number_cards_in_hand, hand, cards_played, number_cards_played);
         }
         
     }
     else if (number_cards_played == 0){
         
-        printf("%d", hand[0]);
+        if (prime_played_game == 1){
+            printf("%d\n", hand[0]);
+        }
+        else if(prime_played_game == 0){
+        
+            int legal_cards[number_cards_in_hand];
+            divisible_numbers(legal_cards, hand, number_cards_in_hand);
+        }
     }
-
-    
     // ADD CODE TO READ THE CARDS PLAYED IN THE HISTORY OF THE GAME INTO AN ARRAY
     // YOU WILL NEED TO USE A WHILE LOOP AND SCANF
 
@@ -153,22 +164,17 @@ void choose_card_to_play(void) {
 // ADD YOUR FUNCTIONS HERE
 
 // Function to store values in hand into an array
-int store_values(int array_length, int array[], int my_hand){
+void store_values(int array_length, int array[]){
 
     int i = 0;
-    int douglas_index = -1;
     
     while (i< array_length){
         
         scanf("%d", &array[i]);
         
-        if (my_hand == 1 && array[i] == 42){
-            
-            douglas_index = i;
-        }
+
         i++;
     } 
-    return douglas_index; 
 }
 
 // Function used to find primes and store them into an array
@@ -205,20 +211,27 @@ int prime_finder(int array_length, int general_array[], int prime_array[]){
     return d;
 }
 
-void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length){
+void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length, int number_cards_played){
     
     int i = legal_cards_length - 1;
     int card_printed = 0;
+    int d = 0;
     
     while (i >= 0){
+    
+        d = 0;
         
-        if (legal_cards[i] < cards_played[0]){
-        
-            printf("%d\n", legal_cards[i]);
-            card_printed = 1;
+        while (d < number_cards_played){
+            if (legal_cards[i] < cards_played[d]){
             
-            // Exit loop condition
-            i = -1;
+                printf("%d\n", legal_cards[i]);
+                card_printed = 1;
+                
+                // Exit loop condition
+                i = -1;
+                d = number_cards_played;
+            }
+            d++;
         }
         i = i - 1; 
     }
@@ -229,11 +242,12 @@ void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_
     }
 }
 
-void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[]){
+void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[], int number_cards_played){
 
     int i = 0;
     int d = 0;
     int coco_cards[number_cards_in_hand];
+    int douglas_index = -1;
     
     while (i < number_cards_in_hand){
     
@@ -244,21 +258,72 @@ void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[]){
             if ( hand[i] % counter == 0 && cards_played[0] % counter == 0){
             
                 coco_cards[d] = hand[i];
+                
+                if (coco_cards[d] == DOUGLAS){
+                    douglas_index = d;
+                }
+                
                 d++;   
                 counter = hand[i]; 
+                
+                
             }
             counter++;
         }
             
         i++;
     }
+
     
-    if ( d > 0){
+    i = 0;
+    while (i < number_cards_played){
+        if ( d > 0 && douglas_index > 0 && cards_played[i] > DOUGLAS){
+            i = number_cards_played;
+            printf("%d\n", coco_cards[douglas_index]);
+            douglas_index = -1;
+        }
+        
+        else if ( d > 0){
     
-        largest_play_no_win(cards_played, coco_cards, d);
-    }
-    else {
-        printf("%d\n", hand[number_cards_in_hand - 1]);
+            largest_play_no_win(cards_played, coco_cards, d, number_cards_played);
+            i = number_cards_played;
+        }
+        
+        else {
+            printf("%d\n", hand[number_cards_in_hand - 1]);
+            i = number_cards_played;
+        }
+    i++;
     }
 }
 
+
+void divisible_numbers(int legal_cards[], int hand[], int number_cards_in_hand){
+    
+    int i = 0;
+    int d = 0;
+    
+    while (i < number_cards_in_hand){
+    
+        int counter = 2;
+        
+        while (counter < hand[i]){
+            
+            if ( hand[i] % counter == 0){
+            
+                counter = hand[i];
+                legal_cards[d] = hand[i];
+                
+                d++;
+            }
+            counter++;
+        }
+        i++;
+    }
+    if (d > 0){
+        printf("%d\n", legal_cards[0]);
+    }
+    else{
+        printf("%d\n", hand[0]);
+    }
+}
