@@ -1,6 +1,6 @@
 // Assignment 1 19T1 COMP1511 Coco
 //
-// This program was written by YOUR-NAME-HERE (z5258152)
+// This program was written by ABDUL-KANJ (z5258152)
 // on 29/03/19
 //
 
@@ -23,8 +23,6 @@
 #define DOUGLAS              42
 
 
-// IF YOU NEED MORE #defines ADD THEM HERE
-
 
 void print_player_name(void);
 void choose_discards(void);
@@ -36,10 +34,7 @@ void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_
 void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[], int number_cards_played);
 void divisible_numbers(int legal_cards[], int hand[], int number_cards_in_hand);
 
-// ADD PROTOTYPES FOR YOUR FUNCTIONS HERE
 
-
-// You should not need to change this main function
 
 int main(void) {
 
@@ -76,13 +71,15 @@ void choose_discards() {
     
     store_values(N_CARDS_INITIAL_HAND, cards_in_hand);
     
-    
+    // loop used to ensure only three cards are discarded
     while ( i > 0 && d  < 3){
         
+        // Statement to ensure the Douglas is kept in hand
         if (cards_in_hand[i] == DOUGLAS){
             
             i = i - 1;
         }
+        // Discard largest card otherwise
         else{
         
             printf("%d ", cards_in_hand[i]);
@@ -115,6 +112,7 @@ void choose_card_to_play(void) {
     
     int prime_played_game = 0;
     
+    // If we are not the first player follow through this IF statement
     if (number_cards_played > 0){
         
         int cards_played[number_cards_played];
@@ -124,50 +122,53 @@ void choose_card_to_play(void) {
         int prime_played_length = 0;
         prime_played_length = prime_finder(1, cards_played, prime_played);
         
+        // If there has been a prime played 
         if (prime_played_game == 0 && prime_played_length == 1){
             prime_played_game = 1;
         }
         
+        // Statement to play primes if we have primes in hand and a prime has been played
         if (prime_played_length == 1 && primes_hand_length > 0){
             
             largest_play_no_win(cards_played, primes_hand, primes_hand_length, number_cards_played);
         }
+        
+        // If a prime has been played and 0 primes in hand, play largest number in hand
         else if (prime_played_length == 1 && primes_hand_length <= 0){
         
             printf("%d\n", hand[number_cards_in_hand - 1]);
         }
+        // If not a prime played first, play a coco number
         else if (prime_played_length == 0){
         
             coco_numbers(number_cards_in_hand, hand, cards_played, number_cards_played);
         }
         
     }
+    // If we are the first player follow the following statements
     else if (number_cards_played == 0){
         
+        // If prime has been played in previous round, play lowest card in hand
         if (prime_played_game == 1){
             printf("%d\n", hand[0]);
         }
+        // If no prime has been played in previous round yet, play the lowest legal number
         else if(prime_played_game == 0){
         
             int legal_cards[number_cards_in_hand];
             divisible_numbers(legal_cards, hand, number_cards_in_hand);
         }
     }
-    // ADD CODE TO READ THE CARDS PLAYED IN THE HISTORY OF THE GAME INTO AN ARRAY
-    // YOU WILL NEED TO USE A WHILE LOOP AND SCANF
-
-    // THEN REPLACE THIS PRINTF WITH CODE TO CHOOSE AND PRINT THE CARD YOU WISH TO PLAY
-
 
 }
 
-// ADD YOUR FUNCTIONS HERE
 
 // Function to store values in hand into an array
 void store_values(int array_length, int array[]){
 
     int i = 0;
     
+    // Loop used to go through all inputs and store them in an array
     while (i< array_length){
         
         scanf("%d", &array[i]);
@@ -183,13 +184,16 @@ int prime_finder(int array_length, int general_array[], int prime_array[]){
     int i = 0;
     int d = 0;
     
+    // Loop used to go through array
     while (i < array_length){
         
         int prime = 1;
         int counter = 2;
         
+        // Loop used to check whether prime or composite
         while (counter < general_array[i]){
         
+            // If statement used to signify that the values are not prime
             if (general_array[i] % counter == 0){
                 
                 prime = 0;
@@ -200,6 +204,7 @@ int prime_finder(int array_length, int general_array[], int prime_array[]){
             counter++;
         }   
         
+        // Statement used to store value if they are prime
         if (prime == 1){
         
             prime_array[d] = general_array[i];
@@ -211,23 +216,27 @@ int prime_finder(int array_length, int general_array[], int prime_array[]){
     return d;
 }
 
+// Function to play the Largest card possible without winning the round
 void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_length, int number_cards_played){
     
     int i = legal_cards_length - 1;
     int card_printed = 0;
     int d = 0;
     
+    // Loop used to go through all legal cards starting from largest value
     while (i >= 0){
     
         d = 0;
         
+        // Loop used to go through all cards played during round and compare
         while (d < number_cards_played){
+        
             if (legal_cards[i] < cards_played[d]){
             
                 printf("%d\n", legal_cards[i]);
                 card_printed = 1;
                 
-                // Exit loop condition
+                // Exit loop conditions
                 i = -1;
                 d = number_cards_played;
             }
@@ -236,12 +245,14 @@ void largest_play_no_win(int cards_played[], int legal_cards[], int legal_cards_
         i = i - 1; 
     }
     
+    // If no card printed during the comparison Loop, play the smallest legal card
     if (card_printed == 0){
     
         printf("%d\n", legal_cards[0]);
     }
 }
 
+// Function to check which cards in hand are cocomoposite with the first card played for the round
 void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[], int number_cards_played){
 
     int i = 0;
@@ -249,66 +260,84 @@ void coco_numbers(int number_cards_in_hand, int hand[], int cards_played[], int 
     int coco_cards[number_cards_in_hand];
     int douglas_index = -1;
     
+    // Main loop used to go through each card in hand
     while (i < number_cards_in_hand){
     
         int counter = 2;
-    
+        
+        // Loop to test all possible common divisors
         while (counter < hand[i]){
         
+            // If condition to ensure that the divisor is common to both cards
             if ( hand[i] % counter == 0 && cards_played[0] % counter == 0){
             
                 coco_cards[d] = hand[i];
                 
+                // Stores index of the Douglas if it is a coco number with the first card played
                 if (coco_cards[d] == DOUGLAS){
                     douglas_index = d;
                 }
-                
                 d++;   
+                
+                // Exit condition to prevent unnecessary/repeated storing of the same card value 
                 counter = hand[i]; 
-                
-                
             }
             counter++;
         }
-            
         i++;
     }
-
     
     i = 0;
+    
+    
+    int card_printed = 0;
+    
+    // Loop used to check whether card values played for the round are > than the Douglas
     while (i < number_cards_played){
+     
         if ( d > 0 && douglas_index > 0 && cards_played[i] > DOUGLAS){
+     
             i = number_cards_played;
             printf("%d\n", coco_cards[douglas_index]);
+            
+            // Unallocates variable storing douglas index to prevent incorrect use 
             douglas_index = -1;
-        }
-        
-        else if ( d > 0){
-    
-            largest_play_no_win(cards_played, coco_cards, d, number_cards_played);
-            i = number_cards_played;
-        }
-        
-        else {
-            printf("%d\n", hand[number_cards_in_hand - 1]);
-            i = number_cards_played;
+            // Variable card_printed set to true
+            card_printed = 1;
         }
     i++;
     }
+    
+    // If douglas is not played/unplayable use largest_playable_no_win function to decide card to play
+    if ( d > 0 && card_printed != 1){
+    
+        largest_play_no_win(cards_played, coco_cards, d, number_cards_played);
+        card_printed = 1;
+    }
+        
+    // If no cards printed at all, play largest card in hand
+    else if (card_printed != 1){
+        printf("%d\n", hand[number_cards_in_hand - 1]);
+        card_printed = 1;
+    }
+
 }
 
-
+// Function to check which cards in hand are non-prime when playing first card / No prime played
 void divisible_numbers(int legal_cards[], int hand[], int number_cards_in_hand){
     
     int i = 0;
     int d = 0;
     
+    // Main Loop to store the composite numbers
     while (i < number_cards_in_hand){
     
         int counter = 2;
         
+        // Loop used to go through all possible divisors
         while (counter < hand[i]){
             
+            // If Loop to test whether divisible by the divisor
             if ( hand[i] % counter == 0){
             
                 counter = hand[i];
@@ -320,10 +349,16 @@ void divisible_numbers(int legal_cards[], int hand[], int number_cards_in_hand){
         }
         i++;
     }
+    
+    // Plays the lowest legal card if any composite numbers in hand
     if (d > 0){
+     
         printf("%d\n", legal_cards[0]);
     }
+    
+    // Plays lowest card value in hand if no composite numbers
     else{
+     
         printf("%d\n", hand[0]);
     }
 }
